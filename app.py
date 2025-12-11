@@ -15,7 +15,9 @@ from io import BytesIO
 # URLs from GitHub Releases
 # ---------------------------------
 MODEL_URL = "https://github.com/NoofAS-DS/MLNLP/releases/download/v1.0.0/Random_Forest_level_model.pkl"
-CSV_URL   = "https://github.com/NoofAS-DS/MLNLP/releases/download/v1.0.0/data_jobs.csv"  # ← عدّليها لو اسم التاق/الملف مختلف
+CSV_URL   = "https://github.com/NoofAS-DS/MLNLP/releases/download/v1.0.0/data_jobs.csv"
+PREP_URL  = "https://github.com/NoofAS-DS/MLNLP/releases/download/v1.0.0/smaller_df_prepared.csv"
+# ✅ عدّلي الروابط لو اختلف اسم التاق أو الملفات في الـ Release
 
 # ---------------------------------
 # Page Config
@@ -37,12 +39,15 @@ st.caption(
 @st.cache_data
 def load_data():
     # تحميل data_jobs.csv من GitHub Releases
-    resp = requests.get(CSV_URL)
-    resp.raise_for_status()
-    raw_df = pd.read_csv(BytesIO(resp.content))           # البيانات الأصلية من الرابط
+    resp_raw = requests.get(CSV_URL)
+    resp_raw.raise_for_status()
+    raw_df = pd.read_csv(BytesIO(resp_raw.content))           # البيانات الأصلية من الرابط
 
-    # هذا يبقى من ملف محلي داخل الريبو
-    prep_df = pd.read_csv("smaller_df_prepared.csv")      # بعد الـ Encoding
+    # تحميل smaller_df_prepared.csv من GitHub Releases
+    resp_prep = requests.get(PREP_URL)
+    resp_prep.raise_for_status()
+    prep_df = pd.read_csv(BytesIO(resp_prep.content))         # بعد الـ Encoding
+
     return raw_df, prep_df
 
 
@@ -57,7 +62,7 @@ def load_models():
 
     rf_model = joblib.load(BytesIO(response.content))
 
-    # 2) Load local artifacts (small files)
+    # 2) Load local artifacts (small files) من ملفات داخل الريبو
     scaler = joblib.load("scaler_jobs_level.pkl")         # ✅ scaler
     tfidf = joblib.load("tfidf_description.pkl")
     nlp_model = joblib.load("nlp_level_model.pkl")
@@ -215,5 +220,6 @@ with st.expander("📚 ملاحظات تعليمية"):
 - مودل **NLP** يعتمد فقط على الوصف النصي
 - **Ensemble** يدمج المودلين لتحسين العدالة بين الفئات
 """)
+
 
 
